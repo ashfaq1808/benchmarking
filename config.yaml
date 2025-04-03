@@ -1,0 +1,10 @@
+hosts:
+  - 128.110.219.108
+  - 128.110.219.101
+
+keyspace: benchmark
+table: benchmark_table
+
+reads: 30000
+writes: 20000
+concurrency: 100
