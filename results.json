@@ -56,3 +56,507 @@
     "concurrency_level": 100,
     "throughput": 1
 }
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:39:23-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:42:00-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:42:00-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:42:00-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
+{
+    "type": "read",
+    "delay_ms": 0,
+    "success": false,
+    "timestamp": "2025-04-09T21:55:38-06:00",
+    "concurrency_level": 100,
+    "throughput": 1
+}
