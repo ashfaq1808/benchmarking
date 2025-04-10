@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"sync"
 )
 
 type BenchmarkResult struct {
@@ -17,23 +16,7 @@ type BenchmarkResult struct {
 	ErrorCode        string `json:"error_code,omitempty"`
 }
 
-var logMutex sync.Mutex
-
-// func logResult(testType string, delay int64, success bool, errMsg string) {
-// 	entry := BenchmarkResult{
-// 		Type:      testType,
-// 		DelayMs:   delay,
-// 		Success:   success,
-// 		Error:     errMsg,
-// 		Timestamp: time.Now().Format(time.RFC3339),
-// 	}
-
-// 	logMutex.Lock()
-// 	defer logMutex.Unlock()
-// 	f, _ := os.OpenFile("results.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-// 	defer f.Close()
-// 	json.NewEncoder(f).Encode(entry)
-// }
+// var logMutex sync.Mutex
 
 func logResult(result BenchmarkResult) {
 	file, err := os.OpenFile("results.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)

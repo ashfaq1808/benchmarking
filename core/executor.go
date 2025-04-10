@@ -10,18 +10,6 @@ import (
 var writtenKeys []string
 var keyMutex sync.Mutex
 
-// func logResult(result BenchmarkResult) {
-// 	file, err := os.OpenFile("results.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-// 	if err != nil {
-// 		fmt.Println("Error opening results.json:", err)
-// 		return
-// 	}
-// 	defer file.Close()
-// 	encoder := json.NewEncoder(file)
-// 	encoder.SetIndent("", "    ")
-// 	encoder.Encode(result)
-// }
-
 func RunOpenLoopBenchmark(e *CassandraEngine, cfg *Config) {
 	totalOps := cfg.TotalReads + cfg.TotalWrites
 	opsPerWorker := totalOps / cfg.Concurrency
@@ -122,7 +110,15 @@ func performWrite(e *CassandraEngine) bool {
 	id := fmt.Sprintf("w_%d", time.Now().UnixNano())
 	payload := "payload"
 	session := e.GetRandomSession()
-	err := session.Query(fmt.Sprintf("INSERT INTO %s (id, data) VALUES (?, ?)", e.Config.Table), id, payload).Exec()
+	var err error
+	for retries := 0; retries < 3; retries++ {
+		err = session.Query(fmt.Sprintf("INSERT INTO %s (id, data) VALUES (?, ?)", e.Config.Table), id, payload).Exec()
+		if err == nil {
+			break
+		}
+		time.Sleep(2 * time.Second) // Retry after a short delay
+	}
+
 	if err != nil {
 		logResult(BenchmarkResult{
 			Type:      "write",
