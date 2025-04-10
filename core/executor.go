@@ -141,3 +141,36 @@ func performRequests(e *CassandraEngine, rateAdjustment float64) {
 		}
 	}
 }
+
+func ValidateReads(e *CassandraEngine, sampleSize int) {
+	fmt.Println("Validating read correctness...")
+
+	// Pick random keys from the written keys to validate
+	keyMutex.Lock()
+	sampleKeys := getSampleKeys(sampleSize)
+	keyMutex.Unlock()
+
+	// Validate each key
+	for _, key := range sampleKeys {
+		var data string
+		session := e.GetRandomSession()
+		err := session.Query(fmt.Sprintf("SELECT data FROM %s WHERE id = ?", e.Config.Table), key).Scan(&data)
+		if err != nil {
+			fmt.Printf("Read validation failed for key: %s\n", key)
+		} else {
+			fmt.Printf("Read validation success for key: %s | data: %s\n", key, data)
+		}
+	}
+}
+
+// Helper function to get a sample of keys for validation
+func getSampleKeys(sampleSize int) []string {
+	sampleKeys := make([]string, 0, sampleSize)
+	for i := 0; i < sampleSize; i++ {
+		if len(writtenKeys) > 0 {
+			key := writtenKeys[rand.Intn(len(writtenKeys))]
+			sampleKeys = append(sampleKeys, key)
+		}
+	}
+	return sampleKeys
+}
