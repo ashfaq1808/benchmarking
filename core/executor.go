@@ -1,79 +1,121 @@
 package core
 
 import (
-    "fmt"
-    "math/rand"
-    "sync"
-    "time"
+	"fmt"
+	"math/rand"
+	"sync"
+	"time"
 )
 
 var writtenKeys []string
 var keyMutex sync.Mutex
 
-func RunBenchmark(e *CassandraEngine, cfg *Config) {
-    var wg sync.WaitGroup
-    totalOps := cfg.TotalReads + cfg.TotalWrites
-    opsPerWorker := totalOps / cfg.Concurrency
+func RunOpenLoopBenchmark(e *CassandraEngine, cfg *Config) {
+	totalOps := cfg.TotalReads + cfg.TotalWrites
+	opsPerWorker := totalOps / cfg.Concurrency
+	var wg sync.WaitGroup
 
-    readTarget := cfg.TotalReads
-    writeTarget := cfg.TotalWrites
+	for i := 0; i < cfg.Concurrency; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			reads, writes := 0, 0
+			for j := 0; j < opsPerWorker; j++ {
+				if writes < cfg.TotalWrites && (reads >= cfg.TotalReads || rand.Intn(2) == 0) {
+					performWrite(e)
+					writes++
+				} else if reads < cfg.TotalReads {
+					performRead(e)
+					reads++
+				}
+			}
+		}()
+	}
+	wg.Wait()
+}
 
-    for i := 0; i < cfg.Concurrency; i++ {
-        wg.Add(1)
-        go func() {
-            defer wg.Done()
-            reads, writes := 0, 0
-            for j := 0; j < opsPerWorker; j++ {
-                if writes < writeTarget && (reads >= readTarget || rand.Intn(2) == 0) {
-                    performWrite(e)
-                    writes++
-                } else if reads < readTarget {
-                    performRead(e)
-                    reads++
-                }
-            }
-        }()
-    }
-    wg.Wait()
+func RunClosedLoopBenchmark(e *CassandraEngine, cfg *Config) {
+	targetRate := 100.0 // Placeholder for target throughput
+	lastTime := time.Now()
+	totalRequests := 0
+
+	for {
+		currentTime := time.Now()
+		elapsedTime := currentTime.Sub(lastTime).Seconds()
+
+		if elapsedTime >= 1 {
+			throughput := float64(totalRequests) / elapsedTime
+			adjustRate := calculateAdjustment(throughput, targetRate)
+			performRequests(e, adjustRate)
+			lastTime = currentTime
+			totalRequests = 0
+		}
+	}
+}
+
+func RunLoadTest(e *CassandraEngine, cfg *Config) {
+	fmt.Println("Starting load test...")
+	maxConcurrency := cfg.MaxConcurrency
+	failureThreshold := cfg.FailureThreshold
+
+	for concurrency := 1; concurrency <= maxConcurrency; concurrency++ {
+		fmt.Printf("Running with %d concurrent requests...\n", concurrency)
+		var wg sync.WaitGroup
+		failureCount := 0
+
+		for i := 0; i < concurrency; i++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				if !performRandomReadWrite(e) {
+					failureCount++
+				}
+			}()
+		}
+		wg.Wait()
+
+		failureRate := float64(failureCount) / float64(concurrency)
+		if failureRate > failureThreshold {
+			fmt.Printf("Server started failing at concurrency %d with failure rate %.2f%%\n", concurrency, failureRate*100)
+			break
+		}
+	}
 }
 
 func performWrite(e *CassandraEngine) {
-    id := fmt.Sprintf("w_%d", time.Now().UnixNano())
-    payload := "payload"
-    session := e.GetRandomSession()
-    start := time.Now()
-    err := session.Query(fmt.Sprintf(`INSERT INTO %s (id, data) VALUES (?, ?)`, e.Config.Table), id, payload).Exec()
-    duration := time.Since(start).Milliseconds()
-
-    if err == nil {
-        keyMutex.Lock()
-        writtenKeys = append(writtenKeys, id)
-        keyMutex.Unlock()
-        logResult("write", duration, true, "")
-    } else {
-        logResult("write", duration, false, err.Error())
-    }
+	id := fmt.Sprintf("w_%d", time.Now().UnixNano())
+	payload := "payload"
+	session := e.GetRandomSession()
+	err := session.Query(fmt.Sprintf("INSERT INTO %s (id, data) VALUES (?, ?)", e.Config.Table), id, payload).Exec()
+	if err != nil {
+		fmt.Println("Write failed:", err)
+	}
+	keyMutex.Lock()
+	writtenKeys = append(writtenKeys, id)
+	keyMutex.Unlock()
 }
 
 func performRead(e *CassandraEngine) {
-    keyMutex.Lock()
-    if len(writtenKeys) == 0 {
-        keyMutex.Unlock()
-        return
-    }
-    id := writtenKeys[rand.Intn(len(writtenKeys))]
-    keyMutex.Unlock()
+	keyMutex.Lock()
+	if len(writtenKeys) == 0 {
+		keyMutex.Unlock()
+		return
+	}
+	id := writtenKeys[rand.Intn(len(writtenKeys))]
+	keyMutex.Unlock()
 
-    var data string
-    session := e.GetRandomSession()
-    start := time.Now()
-    err := session.Query(fmt.Sprintf(`SELECT data FROM %s WHERE id = ?`, e.Config.Table), id).Scan(&data)
-    duration := time.Since(start).Milliseconds()
-
-    if err == nil {
-        logResult("read", duration, true, "")
-    } else {
-        logResult("read", duration, false, err.Error())
-    }
+	var data string
+	session := e.GetRandomSession()
+	err := session.Query(fmt.Sprintf("SELECT data FROM %s WHERE id = ?", e.Config.Table), id).Scan(&data)
+	if err != nil {
+		fmt.Println("Read failed:", err)
+	}
 }
 
+func performRandomReadWrite(e *CassandraEngine) bool {
+	id := fmt.Sprintf("w_%d", time.Now().UnixNano())
+	payload := "payload"
+	session := e.GetRandomSession()
+	err := session.Query(fmt.Sprintf("INSERT INTO %s (id, data) VALUES (?, ?)", e.Config.Table), id, payload).Exec()
+	return err == nil
+}

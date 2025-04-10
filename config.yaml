@@ -1,10 +1,13 @@
 hosts:
-  - 128.110.219.108
-  - 128.110.219.101
-
+  - 155.98.38.146
+  - 155.98.38.130
 keyspace: benchmark
 table: benchmark_table
-
-reads: 30000
-writes: 20000
+reads: 70
+writes: 30
 concurrency: 100
+warmup_time: 10
+duration: 60
+loop_type: "open"  
+max_concurrency: 1000
+failure_threshold: 0.05
