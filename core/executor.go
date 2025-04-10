@@ -119,3 +119,25 @@ func performRandomReadWrite(e *CassandraEngine) bool {
 	err := session.Query(fmt.Sprintf("INSERT INTO %s (id, data) VALUES (?, ?)", e.Config.Table), id, payload).Exec()
 	return err == nil
 }
+
+func calculateAdjustment(currentThroughput, targetRate float64) float64 {
+	adjustmentFactor := targetRate / currentThroughput
+	if adjustmentFactor > 1 {
+		return 1 + adjustmentFactor*0.1
+	} else {
+		return 1 - adjustmentFactor*0.1
+	}
+}
+
+// New function to perform requests dynamically based on the adjusted rate
+func performRequests(e *CassandraEngine, rateAdjustment float64) {
+	numRequests := int(rateAdjustment * float64(100))
+
+	for i := 0; i < numRequests; i++ {
+		if rand.Intn(2) == 0 {
+			performWrite(e)
+		} else {
+			performRead(e)
+		}
+	}
+}
