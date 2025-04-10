@@ -1,9 +1,8 @@
 package core
 
 import (
-	"fmt"
+	"log"
 	"math/rand"
-	"time"
 
 	"github.com/gocql/gocql"
 )
@@ -14,23 +13,15 @@ type CassandraEngine struct {
 }
 
 func (e *CassandraEngine) Connect() error {
-	for _, host := range e.Config.Hosts {
-		cluster := gocql.NewCluster(host)
-		cluster.Keyspace = e.Config.Keyspace
-		cluster.Consistency = gocql.Quorum
-		cluster.Timeout = 30 * time.Second
-		session, err := cluster.CreateSession()
-		if err != nil {
-			fmt.Println("Error creating Cassandra session:", err)
-		} else {
-			fmt.Println("Connected to Cassandra")
-		}
-		// if err != nil {
-		// 	return err
-		// }
-		e.Sessions = append(e.Sessions, session)
+	cluster := gocql.NewCluster("155.98.38.146", "155.98.38.130") // Add your actual IP addresses
+	cluster.Keyspace = "benchmark"
+	cluster.Consistency = gocql.Quorum
+	session, err := cluster.CreateSession()
+	if err != nil {
+		log.Fatal("Connection failed: ", err)
 	}
-	return nil
+	defer session.Close()
+
 }
 
 func (e *CassandraEngine) GetRandomSession() *gocql.Session {

@@ -5,6 +5,8 @@ import (
 	"math/rand"
 	"sync"
 	"time"
+
+	"github.com/gocql/gocql"
 )
 
 var writtenKeys []string
@@ -108,17 +110,10 @@ func RunLoadTest(e *CassandraEngine, cfg *Config) {
 
 func performWrite(e *CassandraEngine) bool {
 	id := fmt.Sprintf("w_%d", time.Now().UnixNano())
-	payload := "payload"
+	// payload := "payload"
 	session := e.GetRandomSession()
 	var err error
-	for retries := 0; retries < 3; retries++ {
-		err = session.Query(fmt.Sprintf("INSERT INTO %s (id, data) VALUES (?, ?)", e.Config.Table), id, payload).Exec()
-		if err == nil {
-			break
-		}
-		time.Sleep(2 * time.Second) // Retry after a short delay
-	}
-
+	err = session.Query(`INSERT INTO benchmark_table (id, data) VALUES (?, ?)`, gocql.TimeUUID(), "Benchmarking data").Exec()
 	if err != nil {
 		logResult(BenchmarkResult{
 			Type:      "write",
@@ -146,9 +141,9 @@ func performRead(e *CassandraEngine) bool {
 	id := writtenKeys[rand.Intn(len(writtenKeys))]
 	keyMutex.Unlock()
 
-	var data string
 	session := e.GetRandomSession()
-	err := session.Query(fmt.Sprintf("SELECT data FROM %s WHERE id = ?", e.Config.Table), id).Scan(&data)
+	var data string
+	err := session.Query(`SELECT data FROM benchmark_table WHERE id = ?`, id).Scan(&data)
 	if err != nil {
 		logResult(BenchmarkResult{
 			Type:      "read",
@@ -202,7 +197,6 @@ func ValidateReads(e *CassandraEngine, sampleSize int) {
 	sampleKeys := getSampleKeys(sampleSize)
 	keyMutex.Unlock()
 
-	// Validate each key
 	for _, key := range sampleKeys {
 		var data string
 		session := e.GetRandomSession()
