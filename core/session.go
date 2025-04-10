@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -20,8 +21,13 @@ func (e *CassandraEngine) Connect() error {
 		cluster.Timeout = 30 * time.Second
 		session, err := cluster.CreateSession()
 		if err != nil {
-			return err
+			fmt.Println("Error creating Cassandra session:", err)
+		} else {
+			fmt.Println("Connected to Cassandra")
 		}
+		// if err != nil {
+		// 	return err
+		// }
 		e.Sessions = append(e.Sessions, session)
 	}
 	return nil

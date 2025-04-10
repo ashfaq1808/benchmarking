@@ -1,5 +1,5 @@
 hosts:
-  - 155.98.38.146
+  - 155.98.38.146 
   - 155.98.38.130
 keyspace: benchmark
 table: benchmark_table

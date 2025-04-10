@@ -19,11 +19,17 @@ func (p *CassandraPlugin) Connect() error {
 		cluster := gocql.NewCluster(host)
 		cluster.Keyspace = p.Config.Keyspace
 		cluster.Consistency = gocql.Quorum
-        cluster.Timeout = 30 * time.Second
+		cluster.Timeout = 30 * time.Second
+
 		session, err := cluster.CreateSession()
 		if err != nil {
-			return err
+			fmt.Println("Error creating Cassandra session:", err)
+		} else {
+			fmt.Println("Connected to Cassandra")
 		}
+		// if err != nil {
+		// 	return err
+		// }
 		p.Sessions = append(p.Sessions, session)
 	}
 	return nil
