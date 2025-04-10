@@ -128,6 +128,8 @@ func performWrite(e *CassandraEngine) bool {
 			Timestamp: time.Now().Format(time.RFC3339),
 		})
 		return false
+	} else {
+		fmt.Print("hit error nill")
 	}
 	keyMutex.Lock()
 	writtenKeys = append(writtenKeys, id)
@@ -156,6 +158,8 @@ func performRead(e *CassandraEngine) bool {
 			Timestamp: time.Now().Format(time.RFC3339),
 		})
 		return false
+	} else {
+		fmt.Print("Entering read err nil")
 	}
 	return true
 }
