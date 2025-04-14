@@ -1,8 +1,8 @@
 package main
 
 import (
-	"benchmarking/client"
-	"benchmarking/workload"
+	"cassandra-benchmark/client"
+	"cassandra-benchmark/workload"
 	"fmt"
 	"io/ioutil"
 	"os"

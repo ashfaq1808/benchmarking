@@ -1,7 +1,7 @@
 package workload
 
 import (
-	"benchmarking/result"
+	"cassandra-benchmark/result"
 	"fmt"
 	"math/rand"
 	"sync"
