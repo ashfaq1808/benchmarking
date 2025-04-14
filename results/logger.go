@@ -1,7 +1,7 @@
 package result
 
 import (
-	"cassandra-benchmark/workload"
+	"benchmarking/workload"
 	"encoding/json"
 	"fmt"
 	"os"

@@ -2,7 +2,7 @@ package main
 
 import (
 	"cassandra-benchmark/client"
-	"cassandra-benchmark/workload"
+	"benchmarking/workload"
 	"fmt"
 	"io/ioutil"
 	"os"
