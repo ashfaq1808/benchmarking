@@ -1,7 +1,6 @@
 package result
 
 import (
-	"cassandra-benchmark/workload"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -9,14 +8,23 @@ import (
 	"time"
 )
 
+var logs []interface{}
+
+type Employee struct {
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Dept   string `json:"dept"`
+	Salary int    `json:"salary"`
+}
+
 type WriteLog struct {
-	WorkerID int               `json:"worker_id"`
-	Time     string            `json:"timestamp"`
-	Action   string            `json:"action"`
-	Employee workload.Employee `json:"employee"`
-	Duration string            `json:"duration"`
-	Success  bool              `json:"success"`
-	Error    string            `json:"error,omitempty"`
+	WorkerID int      `json:"worker_id"`
+	Time     string   `json:"timestamp"`
+	Action   string   `json:"action"`
+	Employee Employee `json:"employee"`
+	Duration string   `json:"duration"`
+	Success  bool     `json:"success"`
+	Error    string   `json:"error,omitempty"`
 }
 
 type ReadLog struct {
@@ -46,9 +54,7 @@ func init() {
 	}
 }
 
-func LogWrite(workerID int, emp workload.Employee, duration time.Duration, err error) {
-	logMux.Lock()
-	defer logMux.Unlock()
+func LogWrite(workerID int, emp Employee, duration time.Duration, err error) {
 	entry := WriteLog{
 		WorkerID: workerID,
 		Time:     time.Now().Format(time.RFC3339),
@@ -60,12 +66,12 @@ func LogWrite(workerID int, emp workload.Employee, duration time.Duration, err e
 	if err != nil {
 		entry.Error = err.Error()
 	}
-	json.NewEncoder(logFile).Encode(entry)
+	logMux.Lock()
+	logs = append(logs, entry)
+	logMux.Unlock()
 }
 
 func LogRead(workerID int, id, name, dept string, salary int, duration time.Duration, err error) {
-	logMux.Lock()
-	defer logMux.Unlock()
 	entry := ReadLog{
 		WorkerID: workerID,
 		Time:     time.Now().Format(time.RFC3339),
@@ -80,9 +86,44 @@ func LogRead(workerID int, id, name, dept string, salary int, duration time.Dura
 	if err != nil {
 		entry.Error = err.Error()
 	}
-	json.NewEncoder(logFile).Encode(entry)
+	logMux.Lock()
+	logs = append(logs, entry)
+	logMux.Unlock()
 }
 
 func CloseLogFile() {
-	logFile.Close()
+	logMux.Lock()
+	defer logMux.Unlock()
+
+	file, err := os.Create("result.json")
+	if err != nil {
+		fmt.Println("Could not open result.json:", err)
+		return
+	}
+	defer file.Close()
+
+	// encoder := json.NewEncoder(file)
+	_, err = file.Write([]byte("[\n"))
+	if err != nil {
+		fmt.Println("Write error:", err)
+		return
+	}
+
+	for i, entry := range logs {
+		enc, _ := json.Marshal(entry)
+		file.Write(enc)
+		if i != len(logs)-1 {
+			file.Write([]byte(",\n"))
+		}
+	}
+	file.Write([]byte("\n]"))
+}
+
+func InitLogFile() {
+	file, err := os.Create("result.json") 
+	if err != nil {
+		fmt.Println("Failed to initialize result.json:", err)
+		os.Exit(1)
+	}
+	file.Close()
 }
