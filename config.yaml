@@ -1,13 +1,15 @@
-hosts:
-  - 155.98.38.146 
-  - 155.98.38.130
-keyspace: benchmark
-table: benchmark_table
-reads: 70
-writes: 30
-concurrency: 100
-warmup_time: 10
-duration: 60
-loop_type: "open"  
-max_concurrency: 1000
-failure_threshold: 0.05
+cassandra:
+  nodes:
+    - "155.98.38.235"
+    - "155.98.38.236"
+  keyspace: "bench"
+  table: "employees"
+
+benchmark:
+  duration_seconds: 60
+  warmup_seconds: 10
+  concurrency: 10
+  read_ratio: 0.5
+  write_ratio: 0.5
+  mode: "closed-loop"
+  log_file: "result.json"

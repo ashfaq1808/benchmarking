@@ -1,40 +1,58 @@
 package main
 
 import (
-	"benchmark_tool/core"
-	"flag"
+	"cassandra-benchmark/client"
+	"cassandra-benchmark/workload"
 	"fmt"
+	"io/ioutil"
 	"os"
+
+	"gopkg.in/yaml.v2"
 )
 
-func main() {
-	var configFile string
-	var validate bool
-	flag.StringVar(&configFile, "config", "", "Path to YAML configuration file")
-	flag.BoolVar(&validate, "validate", false, "Validate read operations after benchmark")
-	flag.Parse()
+type Config struct {
+	Cassandra struct {
+		Nodes    []string `yaml:"nodes"`
+		Keyspace string   `yaml:"keyspace"`
+		Table    string   `yaml:"table"`
+	} `yaml:"cassandra"`
+	Benchmark struct {
+		DurationSeconds int     `yaml:"duration_seconds"`
+		WarmupSeconds   int     `yaml:"warmup_seconds"`
+		Concurrency     int     `yaml:"concurrency"`
+		ReadRatio       float64 `yaml:"read_ratio"`
+		WriteRatio      float64 `yaml:"write_ratio"`
+		Mode            string  `yaml:"mode"`
+		LogFile         string  `yaml:"log_file"`
+	} `yaml:"benchmark"`
+}
 
-	var config *core.Config
-	var err error
-	if configFile != "" {
-		config, err = core.LoadConfigFromYAML(configFile)
-	} else {
-		config = core.LoadConfigFromFlags()
-	}
+func loadConfig(path string) (*Config, error) {
+	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		fmt.Println("Error loading config:", err)
+		return nil, err
+	}
+	var cfg Config
+	err = yaml.Unmarshal(data, &cfg)
+	if err != nil {
+		return nil, err
+	}
+	return &cfg, nil
+}
+
+func main() {
+	cfg, err := loadConfig("config.yaml")
+	if err != nil {
+		fmt.Println("Failed to load config:", err)
 		os.Exit(1)
 	}
-	engine := &core.CassandraEngine{Config: config}
-	if err := engine.Connect(); err != nil {
-		panic(fmt.Sprintf("Failed to connect to Cassandra nodes: %v", err))
+
+	session := client.Connect(cfg.Cassandra.Nodes, cfg.Cassandra.Keyspace)
+	defer session.Close()
+
+	err = workload.RunBenchmark(cfg, session)
+	if err != nil {
+		fmt.Println("Benchmark failed:", err)
+		os.Exit(1)
 	}
-	defer engine.Close()
-	go core.RunOpenLoopBenchmark(engine, config)
-	go core.RunClosedLoopBenchmark(engine, config)
-	go core.RunLoadTest(engine, config)
-	if validate {
-		core.ValidateReads(engine, 10)
-	}
-	fmt.Println("Benchmark complete.")
 }
