@@ -18,3 +18,22 @@ func Connect(hosts []string, keyspace string) *gocql.Session {
 	}
 	return session
 }
+
+func ConnectToAll(nodes []string, keyspace string) []*gocql.Session {
+	var sessions []*gocql.Session
+
+	for _, node := range nodes {
+		cluster := gocql.NewCluster(node)
+		cluster.Keyspace = keyspace
+		cluster.Consistency = gocql.Quorum
+		cluster.ProtoVersion = 4
+
+		session, err := cluster.CreateSession()
+		if err != nil {
+			log.Fatalf("Failed to connect to %s: %v", node, err)
+		}
+		sessions = append(sessions, session)
+	}
+
+	return sessions
+}

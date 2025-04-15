@@ -1,3 +1,4 @@
+// cassandra-benchmark/main.go
 package main
 
 import (
@@ -6,33 +7,14 @@ import (
 	"cassandra-benchmark/result"
 	"cassandra-benchmark/workload"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 
 	"gopkg.in/yaml.v2"
 )
 
-type Config struct {
-	Cassandra struct {
-		Nodes    []string `yaml:"nodes"`
-		Keyspace string   `yaml:"keyspace"`
-		Table    string   `yaml:"table"`
-	} `yaml:"cassandra"`
-	Benchmark struct {
-		DurationSeconds   int     `yaml:"duration_seconds"`
-		RequestsPerSecond int     `yaml:"requests_per_second"`
-		WarmupSeconds     int     `yaml:"warmup_seconds"`
-		Concurrency       int     `yaml:"concurrency"`
-		ReadRatio         float64 `yaml:"read_ratio"`
-		WriteRatio        float64 `yaml:"write_ratio"`
-		Mode              string  `yaml:"mode"`
-		LogFile           string  `yaml:"log_file"`
-	} `yaml:"benchmark"`
-}
-
 func loadConfig(path string) (*config.Config, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
@@ -50,27 +32,30 @@ func main() {
 		fmt.Println("Failed to load config:", err)
 		os.Exit(1)
 	}
+
 	result.InitLogFile()
-	defer result.CloseLogFile()
 
-	session := client.Connect(cfg.Cassandra.Nodes, cfg.Cassandra.Keyspace)
-	defer session.Close()
+	sessions := client.ConnectToAll(cfg.Cassandra.Nodes, cfg.Cassandra.Keyspace)
+	defer func() {
+		for _, s := range sessions {
+			s.Close()
+		}
+	}()
 
-	err = workload.RunBenchmark(cfg, session)
+	err = workload.RunBenchmark(cfg, sessions)
 	if err != nil {
 		fmt.Println("Benchmark failed:", err)
 		os.Exit(1)
-	} else {
-		result.CloseLogFile()
-
-		fmt.Println("Launching Streamlit dashboard at http://localhost:8501 ...")
-		cmd := exec.Command("streamlit", "run", "visualize.py")
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err = cmd.Run()
-		if err != nil {
-			fmt.Println("Streamlit error:", err)
-		}
 	}
+	result.CloseLogFile()
+	fmt.Println("Benchmarking complete ✅")
+	fmt.Println("Launching Streamlit dashboard at http://localhost:8501 ...")
 
+	cmd := exec.Command("streamlit", "run", "visualize.py")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		fmt.Println("Streamlit error:", err)
+	}
 }

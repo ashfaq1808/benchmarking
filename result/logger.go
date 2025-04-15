@@ -25,19 +25,22 @@ type WriteLog struct {
 	Duration string   `json:"duration"`
 	Success  bool     `json:"success"`
 	Error    string   `json:"error,omitempty"`
+	NodeID   int      `json:"node_id"`
 }
 
 type ReadLog struct {
-	WorkerID int    `json:"worker_id"`
-	Time     string `json:"timestamp"`
-	Action   string `json:"action"`
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	Dept     string `json:"dept"`
-	Salary   int    `json:"salary"`
-	Duration string `json:"duration"`
-	Success  bool   `json:"success"`
-	Error    string `json:"error,omitempty"`
+	WorkerID         int       `json:"worker_id"`
+	Time             string    `json:"timestamp"`
+	Action           string    `json:"action"`
+	NodeID           int       `json:"node_id"`
+	ID               string    `json:"id"`
+	Name             string    `json:"name"`
+	Dept             string    `json:"dept"`
+	Salary           int       `json:"salary"`
+	Duration         string    `json:"duration"`
+	Success          bool      `json:"success"`
+	Error            string    `json:"error,omitempty"`
+	ReturnedEmployee *Employee `json:"returned_employee,omitempty"`
 }
 
 var (
@@ -54,9 +57,10 @@ func init() {
 	}
 }
 
-func LogWrite(workerID int, emp Employee, duration time.Duration, err error) {
+func LogWrite(workerID, nodeID int, emp Employee, duration time.Duration, err error) {
 	entry := WriteLog{
 		WorkerID: workerID,
+		NodeID:   nodeID,
 		Time:     time.Now().Format(time.RFC3339),
 		Action:   "write",
 		Employee: emp,
@@ -71,11 +75,12 @@ func LogWrite(workerID int, emp Employee, duration time.Duration, err error) {
 	logMux.Unlock()
 }
 
-func LogRead(workerID int, id, name, dept string, salary int, duration time.Duration, err error) {
+func LogRead(workerID, nodeID int, id, name, dept string, salary int, duration time.Duration, err error) {
 	entry := ReadLog{
 		WorkerID: workerID,
 		Time:     time.Now().Format(time.RFC3339),
 		Action:   "read",
+		NodeID:   nodeID,
 		ID:       id,
 		Name:     name,
 		Dept:     dept,
@@ -83,9 +88,17 @@ func LogRead(workerID int, id, name, dept string, salary int, duration time.Dura
 		Duration: duration.String(),
 		Success:  err == nil,
 	}
-	if err != nil {
+	if err == nil {
+		entry.ReturnedEmployee = &Employee{
+			ID:     id,
+			Name:   name,
+			Dept:   dept,
+			Salary: salary,
+		}
+	} else {
 		entry.Error = err.Error()
 	}
+
 	logMux.Lock()
 	logs = append(logs, entry)
 	logMux.Unlock()
@@ -120,7 +133,7 @@ func CloseLogFile() {
 }
 
 func InitLogFile() {
-	file, err := os.Create("result.json") 
+	file, err := os.Create("result.json")
 	if err != nil {
 		fmt.Println("Failed to initialize result.json:", err)
 		os.Exit(1)
