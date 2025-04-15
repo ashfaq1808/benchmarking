@@ -6,7 +6,6 @@ import plotly.express as px
 import streamlit as st
 from datetime import datetime
 
-# Load data
 with open("result.json", "r") as f:
     data = json.load(f)
 
@@ -14,13 +13,13 @@ df = pd.json_normalize(data)
 df["timestamp"] = pd.to_datetime(df["timestamp"])
 df["duration_ms"] = df["duration"].str.replace("ms", "").astype(float)
 df["second"] = df["timestamp"].dt.floor("s")
-df = df[df["node_id"].notnull()]  # Remove missing node_id
+df = df[df["node_id"].notnull()] 
 
-# Layout setup
+
 st.set_page_config(layout="centered")
 st.title("📊 Cassandra Benchmarking Results")
 
-# Plot settings
+
 sns.set(style="whitegrid")
 plt.rcParams.update({'axes.titlesize': 10, 'axes.labelsize': 8})
 
@@ -35,7 +34,7 @@ fig_tp = px.line(tp, x="second", y="count", color="label", markers=True)
 fig_tp.update_layout(height=350, title="Throughput (ops/sec)", margin=dict(l=20, r=20, t=40, b=20))
 st.plotly_chart(fig_tp, use_container_width=True)
 
-# 2️⃣ Node-wise Latency Over Time (Interactive)
+
 st.subheader("2️⃣ Node-wise Latency Over Time")
 lat = df.groupby(["second", "node_id", "action"])["duration_ms"].mean().reset_index()
 lat["label"] = "Node " + lat["node_id"].astype(str) + " - " + lat["action"]
