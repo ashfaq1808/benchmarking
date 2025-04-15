@@ -2,6 +2,7 @@ cassandra:
   nodes:
     - "155.98.38.148"
     - "155.98.38.155"
+    - "155.98.38.236"
   keyspace: "bench"
   table: "employees"
 

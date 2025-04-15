@@ -44,7 +44,9 @@ func RunBenchmark(cfg *config.Config, sessions []*gocql.Session) error {
 	}
 
 	var wg sync.WaitGroup
-	endTime := time.Now().Add(time.Duration(cfg.Benchmark.DurationSeconds) * time.Second)
+	startTime := time.Now()
+	warmupCutoff := startTime.Add(time.Duration(cfg.Benchmark.WarmupSeconds) * time.Second)
+	endTime := startTime.Add(time.Duration(cfg.Benchmark.DurationSeconds) * time.Second)
 
 	if cfg.Benchmark.Mode == "open-loop" && cfg.Benchmark.RequestsPerSecond > 0 {
 		ticker := time.NewTicker(time.Second / time.Duration(cfg.Benchmark.RequestsPerSecond))
@@ -77,7 +79,9 @@ func RunBenchmark(cfg *config.Config, sessions []*gocql.Session) error {
 					).Exec()
 					duration := time.Since(start)
 
-					result.LogWrite(workerID, nodeIndex, emp, duration, err)
+					if time.Now().After(warmupCutoff) {
+						result.LogWrite(workerID, nodeIndex, emp, duration, err)
+					}
 					if err == nil {
 						addWrittenID(emp.ID)
 					}
@@ -95,7 +99,9 @@ func RunBenchmark(cfg *config.Config, sessions []*gocql.Session) error {
 					).Scan(&name, &dept, &salary)
 					duration := time.Since(start)
 
-					result.LogRead(workerID, nodeIndex, id, name, dept, salary, duration, err)
+					if time.Now().After(warmupCutoff) {
+						result.LogRead(workerID, nodeIndex, id, name, dept, salary, duration, err)
+					}
 				}
 			}(rand.Intn(cfg.Benchmark.Concurrency))
 		}
@@ -127,7 +133,9 @@ func RunBenchmark(cfg *config.Config, sessions []*gocql.Session) error {
 						).Exec()
 						duration := time.Since(start)
 
-						result.LogWrite(workerID, nodeIndex, emp, duration, err)
+						if time.Now().After(warmupCutoff) {
+							result.LogWrite(workerID, nodeIndex, emp, duration, err)
+						}
 						if err == nil {
 							addWrittenID(emp.ID)
 						}
@@ -145,7 +153,9 @@ func RunBenchmark(cfg *config.Config, sessions []*gocql.Session) error {
 						).Scan(&name, &dept, &salary)
 						duration := time.Since(start)
 
-						result.LogRead(workerID, nodeIndex, id, name, dept, salary, duration, err)
+						if time.Now().After(warmupCutoff) {
+							result.LogRead(workerID, nodeIndex, id, name, dept, salary, duration, err)
+						}
 					}
 
 					if cfg.Benchmark.Mode == "closed-loop" {
