@@ -33,7 +33,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	result.InitLogFile()
+	result.InitializeLogger(10000)
+	result.StartFlusher()
 
 	sessions := client.ConnectToAll(cfg.Cassandra.Nodes, cfg.Cassandra.Keyspace)
 	defer func() {
@@ -47,7 +48,7 @@ func main() {
 		fmt.Println("Benchmark failed:", err)
 		os.Exit(1)
 	}
-	result.CloseLogFile()
+	result.StopFlusher()
 	fmt.Println("Benchmarking complete ✅")
 	fmt.Println("Launching Streamlit dashboard at http://localhost:8501 ...")
 

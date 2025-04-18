@@ -1,15 +1,10 @@
 package result
 
 import (
-	"encoding/json"
-	"fmt"
-	"os"
-	"sync"
 	"time"
 )
 
-var logs []interface{}
-
+// Employee struct
 type Employee struct {
 	ID     string `json:"id"`
 	Name   string `json:"name"`
@@ -17,6 +12,7 @@ type Employee struct {
 	Salary int    `json:"salary"`
 }
 
+// WriteLog struct
 type WriteLog struct {
 	WorkerID int      `json:"worker_id"`
 	Time     string   `json:"timestamp"`
@@ -28,6 +24,7 @@ type WriteLog struct {
 	NodeID   int      `json:"node_id"`
 }
 
+// ReadLog struct
 type ReadLog struct {
 	WorkerID         int       `json:"worker_id"`
 	Time             string    `json:"timestamp"`
@@ -43,20 +40,15 @@ type ReadLog struct {
 	ReturnedEmployee *Employee `json:"returned_employee,omitempty"`
 }
 
-var (
-	logFile *os.File
-	logMux  sync.Mutex
-)
+// LogChannel is the buffered channel where all log entries are pushed
+var LogChannel chan interface{}
 
-func init() {
-	var err error
-	logFile, err = os.OpenFile("result.json", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		fmt.Println("Could not open result file:", err)
-		os.Exit(1)
-	}
+// InitializeLogger initializes the log channel
+func InitializeLogger(bufferSize int) {
+	LogChannel = make(chan interface{}, bufferSize)
 }
 
+// LogWrite sends a write operation log into channel
 func LogWrite(workerID, nodeID int, emp Employee, duration time.Duration, err error) {
 	entry := WriteLog{
 		WorkerID: workerID,
@@ -70,11 +62,10 @@ func LogWrite(workerID, nodeID int, emp Employee, duration time.Duration, err er
 	if err != nil {
 		entry.Error = err.Error()
 	}
-	logMux.Lock()
-	logs = append(logs, entry)
-	logMux.Unlock()
+	LogChannel <- entry
 }
 
+// LogRead sends a read operation log into channel
 func LogRead(workerID, nodeID int, id, name, dept string, salary int, duration time.Duration, err error) {
 	entry := ReadLog{
 		WorkerID: workerID,
@@ -98,45 +89,5 @@ func LogRead(workerID, nodeID int, id, name, dept string, salary int, duration t
 	} else {
 		entry.Error = err.Error()
 	}
-
-	logMux.Lock()
-	logs = append(logs, entry)
-	logMux.Unlock()
-}
-
-func CloseLogFile() {
-	logMux.Lock()
-	defer logMux.Unlock()
-
-	file, err := os.Create("result.json")
-	if err != nil {
-		fmt.Println("Could not open result.json:", err)
-		return
-	}
-	defer file.Close()
-
-	// encoder := json.NewEncoder(file)
-	_, err = file.Write([]byte("[\n"))
-	if err != nil {
-		fmt.Println("Write error:", err)
-		return
-	}
-
-	for i, entry := range logs {
-		enc, _ := json.Marshal(entry)
-		file.Write(enc)
-		if i != len(logs)-1 {
-			file.Write([]byte(",\n"))
-		}
-	}
-	file.Write([]byte("\n]"))
-}
-
-func InitLogFile() {
-	file, err := os.Create("result.json")
-	if err != nil {
-		fmt.Println("Failed to initialize result.json:", err)
-		os.Exit(1)
-	}
-	file.Close()
+	LogChannel <- entry
 }
