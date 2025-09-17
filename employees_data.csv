@@ -1,0 +1,21 @@
+name,department,min_salary,max_salary
+Alice Johnson,Engineering,75000,120000
+Bob Smith,HR,45000,80000
+Charlie Brown,Finance,60000,100000
+Diana Prince,Sales,50000,95000
+Eve Adams,Legal,70000,110000
+Frank Wilson,Engineering,80000,125000
+Grace Lee,Marketing,55000,90000
+Henry Davis,Operations,60000,95000
+Ivy Chen,Data Science,85000,130000
+Jack Miller,Product,70000,115000
+Karen White,Design,65000,105000
+Leo Garcia,Security,75000,120000
+Mia Taylor,Support,40000,75000
+Nathan Clark,DevOps,80000,125000
+Olivia Moore,Research,70000,115000
+Paul Anderson,Strategy,90000,140000
+Quinn Roberts,Quality,60000,100000
+Rachel Green,Training,50000,85000
+Sam Wilson,Facilities,45000,75000
+Tara Singh,Procurement,55000,90000

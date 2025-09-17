@@ -22,6 +22,10 @@ func Connect(hosts []string, keyspace string) *gocql.Session {
 func ConnectToAll(nodes []string, keyspace string) []*gocql.Session {
 	var sessions []*gocql.Session
 
+	if len(nodes) == 0 {
+		log.Fatalf("No Cassandra nodes specified in configuration")
+	}
+
 	for _, node := range nodes {
 		cluster := gocql.NewCluster(node)
 		cluster.Keyspace = keyspace
@@ -30,10 +34,16 @@ func ConnectToAll(nodes []string, keyspace string) []*gocql.Session {
 
 		session, err := cluster.CreateSession()
 		if err != nil {
-			log.Fatalf("Failed to connect to %s: %v", node, err)
+			log.Printf("Warning: Failed to connect to %s: %v", node, err)
+			continue
 		}
 		sessions = append(sessions, session)
 	}
 
+	if len(sessions) == 0 {
+		log.Fatalf("Failed to connect to any Cassandra nodes. Please check your configuration and network connectivity.")
+	}
+
+	log.Printf("Successfully connected to %d/%d Cassandra nodes", len(sessions), len(nodes))
 	return sessions
 }

@@ -6,10 +6,11 @@ import (
 
 // Employee struct
 type Employee struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
-	Dept   string `json:"dept"`
-	Salary int    `json:"salary"`
+	ID        string `json:"id"`
+	Category  string `json:"category"`
+	Data      string `json:"data"`
+	Timestamp string `json:"timestamp"`
+	Value     int64  `json:"value"`
 }
 
 // WriteLog struct
@@ -31,9 +32,10 @@ type ReadLog struct {
 	Action           string    `json:"action"`
 	NodeID           int       `json:"node_id"`
 	ID               string    `json:"id"`
-	Name             string    `json:"name"`
-	Dept             string    `json:"dept"`
-	Salary           int       `json:"salary"`
+	Category         string    `json:"category"`
+	Data             string    `json:"data"`
+	RecordTimestamp  string    `json:"record_timestamp"`
+	Value            int64     `json:"value"`
 	Duration         string    `json:"duration"`
 	Success          bool      `json:"success"`
 	Error            string    `json:"error,omitempty"`
@@ -66,25 +68,27 @@ func LogWrite(workerID, nodeID int, emp Employee, duration time.Duration, err er
 }
 
 // LogRead sends a read operation log into channel
-func LogRead(workerID, nodeID int, id, name, dept string, salary int, duration time.Duration, err error) {
+func LogRead(workerID, nodeID int, id, category, data, recordTimestamp string, value int64, duration time.Duration, err error) {
 	entry := ReadLog{
-		WorkerID: workerID,
-		Time:     time.Now().Format(time.RFC3339),
-		Action:   "read",
-		NodeID:   nodeID,
-		ID:       id,
-		Name:     name,
-		Dept:     dept,
-		Salary:   salary,
-		Duration: duration.String(),
-		Success:  err == nil,
+		WorkerID:        workerID,
+		Time:            time.Now().Format(time.RFC3339),
+		Action:          "read",
+		NodeID:          nodeID,
+		ID:              id,
+		Category:        category,
+		Data:            data,
+		RecordTimestamp: recordTimestamp,
+		Value:           value,
+		Duration:        duration.String(),
+		Success:         err == nil,
 	}
 	if err == nil {
 		entry.ReturnedEmployee = &Employee{
-			ID:     id,
-			Name:   name,
-			Dept:   dept,
-			Salary: salary,
+			ID:        id,
+			Category:  category,
+			Data:      data,
+			Timestamp: recordTimestamp,
+			Value:     value,
 		}
 	} else {
 		entry.Error = err.Error()

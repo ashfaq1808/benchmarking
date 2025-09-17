@@ -34,25 +34,82 @@ func getRandomWrittenID() string {
 func RunBenchmark(cfg *config.Config, sessions []*gocql.Session) error {
 	table := cfg.Cassandra.Table
 
-	if err := sessions[0].Query(fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
-		id text PRIMARY KEY,
-		name text,
-		dept text, 
-		salary int
-	);`, table)).Exec(); err != nil {
-		return err
-	}
+	// Table already exists with schema: id uuid PRIMARY KEY, category text, data text, timestamp timestamp, value bigint
+	// No need to create table as it already exists
 
 	var wg sync.WaitGroup
 	startTime := time.Now()
 	warmupCutoff := startTime.Add(time.Duration(cfg.Benchmark.WarmupSeconds) * time.Second)
-	endTime := startTime.Add(time.Duration(cfg.Benchmark.DurationSeconds) * time.Second)
+	endTime := warmupCutoff.Add(time.Duration(cfg.Benchmark.DurationSeconds) * time.Second)
 
 	if cfg.Benchmark.Mode == "open-loop" && cfg.Benchmark.RequestsPerSecond > 0 {
-		ticker := time.NewTicker(time.Second / time.Duration(cfg.Benchmark.RequestsPerSecond))
+		var currentRate int
+		var ticker *time.Ticker
+		
+		if cfg.Benchmark.RatePattern.Enabled {
+			currentRate = cfg.Benchmark.RatePattern.MinRate
+		} else {
+			currentRate = cfg.Benchmark.RequestsPerSecond
+		}
+		
+		ticker = time.NewTicker(time.Second / time.Duration(currentRate))
 		defer ticker.Stop()
+		
+		var phaseStart time.Time
+		var inPeakPhase bool
+		var lastRateChange time.Time
+		
+		if cfg.Benchmark.RatePattern.Enabled {
+			if cfg.Benchmark.RatePattern.Mode == "cycles" {
+				phaseStart = time.Now()
+				inPeakPhase = false
+			} else if cfg.Benchmark.RatePattern.Mode == "random" {
+				lastRateChange = time.Now()
+			}
+		}
 
 		for time.Now().Before(endTime) {
+			if cfg.Benchmark.RatePattern.Enabled {
+				now := time.Now()
+				
+				if cfg.Benchmark.RatePattern.Mode == "cycles" {
+					phaseDuration := now.Sub(phaseStart)
+					
+					var shouldSwitchPhase bool
+					var newRate int
+					
+					if inPeakPhase {
+						shouldSwitchPhase = phaseDuration >= time.Duration(cfg.Benchmark.RatePattern.PeakDuration)*time.Second
+						newRate = cfg.Benchmark.RatePattern.MinRate
+					} else {
+						shouldSwitchPhase = phaseDuration >= time.Duration(cfg.Benchmark.RatePattern.ValleyDuration)*time.Second
+						newRate = cfg.Benchmark.RatePattern.MaxRate
+					}
+					
+					if shouldSwitchPhase {
+						inPeakPhase = !inPeakPhase
+						phaseStart = now
+						currentRate = newRate
+						ticker.Stop()
+						ticker = time.NewTicker(time.Second / time.Duration(currentRate))
+					}
+				} else if cfg.Benchmark.RatePattern.Mode == "random" {
+					timeSinceLastChange := now.Sub(lastRateChange)
+					
+					if timeSinceLastChange >= time.Duration(cfg.Benchmark.RatePattern.ChangeInterval*1000)*time.Millisecond {
+						rateRange := cfg.Benchmark.RatePattern.MaxRate - cfg.Benchmark.RatePattern.MinRate
+						newRate := cfg.Benchmark.RatePattern.MinRate + rand.Intn(rateRange+1)
+						
+						if newRate != currentRate {
+							currentRate = newRate
+							ticker.Stop()
+							ticker = time.NewTicker(time.Second / time.Duration(currentRate))
+						}
+						lastRateChange = now
+					}
+				}
+			}
+			
 			<-ticker.C
 			wg.Add(1)
 			go func(workerID int) {
@@ -61,21 +118,21 @@ func RunBenchmark(cfg *config.Config, sessions []*gocql.Session) error {
 				session := sessions[nodeIndex]
 
 				if rand.Float64() < cfg.Benchmark.WriteRatio {
-					uuid := gocql.TimeUUID().String()
+					uuid := gocql.TimeUUID()
 					empRaw := GenerateEmployee(rand.Int())
-					empRaw.ID = uuid
-
+					
 					emp := result.Employee{
-						ID:     empRaw.ID,
-						Name:   empRaw.Name,
-						Dept:   empRaw.Dept,
-						Salary: empRaw.Salary,
+						ID:        uuid.String(),
+						Category:  empRaw.Category,
+						Data:      empRaw.Data,
+						Timestamp: empRaw.Timestamp,
+						Value:     empRaw.Value,
 					}
 
 					start := time.Now()
 					err := session.Query(
-						fmt.Sprintf(`INSERT INTO %s (id, name, dept, salary) VALUES (?, ?, ?, ?)`, table),
-						emp.ID, emp.Name, emp.Dept, emp.Salary,
+						fmt.Sprintf(`INSERT INTO %s (id, category, data, timestamp, value) VALUES (?, ?, ?, ?, ?)`, table),
+						uuid, emp.Category, emp.Data, time.Now(), emp.Value,
 					).Exec()
 					duration := time.Since(start)
 
@@ -91,16 +148,23 @@ func RunBenchmark(cfg *config.Config, sessions []*gocql.Session) error {
 						return
 					}
 					start := time.Now()
-					var name, dept string
-					var salary int
+					var category, data string
+					var timestamp time.Time
+					var value int64
+					
+					uuid, parseErr := gocql.ParseUUID(id)
+					if parseErr != nil {
+						return
+					}
+					
 					err := session.Query(
-						fmt.Sprintf(`SELECT name, dept, salary FROM %s WHERE id = ?`, table),
-						id,
-					).Scan(&name, &dept, &salary)
+						fmt.Sprintf(`SELECT category, data, timestamp, value FROM %s WHERE id = ?`, table),
+						uuid,
+					).Scan(&category, &data, &timestamp, &value)
 					duration := time.Since(start)
 
 					if time.Now().After(warmupCutoff) {
-						result.LogRead(workerID, nodeIndex, id, name, dept, salary, duration, err)
+						result.LogRead(workerID, nodeIndex, id, category, data, timestamp.Format(time.RFC3339), value, duration, err)
 					}
 				}
 			}(rand.Intn(cfg.Benchmark.Concurrency))
@@ -115,21 +179,21 @@ func RunBenchmark(cfg *config.Config, sessions []*gocql.Session) error {
 					session := sessions[nodeIndex]
 
 					if rand.Float64() < cfg.Benchmark.WriteRatio {
-						uuid := gocql.TimeUUID().String()
+						uuid := gocql.TimeUUID()
 						empRaw := GenerateEmployee(rand.Int())
-						empRaw.ID = uuid
-
+						
 						emp := result.Employee{
-							ID:     empRaw.ID,
-							Name:   empRaw.Name,
-							Dept:   empRaw.Dept,
-							Salary: empRaw.Salary,
+							ID:        uuid.String(),
+							Category:  empRaw.Category,
+							Data:      empRaw.Data,
+							Timestamp: empRaw.Timestamp,
+							Value:     empRaw.Value,
 						}
 
 						start := time.Now()
 						err := session.Query(
-							fmt.Sprintf(`INSERT INTO %s (id, name, dept, salary) VALUES (?, ?, ?, ?)`, table),
-							emp.ID, emp.Name, emp.Dept, emp.Salary,
+							fmt.Sprintf(`INSERT INTO %s (id, category, data, timestamp, value) VALUES (?, ?, ?, ?, ?)`, table),
+							uuid, emp.Category, emp.Data, time.Now(), emp.Value,
 						).Exec()
 						duration := time.Since(start)
 
@@ -145,16 +209,23 @@ func RunBenchmark(cfg *config.Config, sessions []*gocql.Session) error {
 							continue
 						}
 						start := time.Now()
-						var name, dept string
-						var salary int
+						var category, data string
+						var timestamp time.Time
+						var value int64
+						
+						uuid, parseErr := gocql.ParseUUID(id)
+						if parseErr != nil {
+							continue
+						}
+						
 						err := session.Query(
-							fmt.Sprintf(`SELECT name, dept, salary FROM %s WHERE id = ?`, table),
-							id,
-						).Scan(&name, &dept, &salary)
+							fmt.Sprintf(`SELECT category, data, timestamp, value FROM %s WHERE id = ?`, table),
+							uuid,
+						).Scan(&category, &data, &timestamp, &value)
 						duration := time.Since(start)
 
 						if time.Now().After(warmupCutoff) {
-							result.LogRead(workerID, nodeIndex, id, name, dept, salary, duration, err)
+							result.LogRead(workerID, nodeIndex, id, category, data, timestamp.Format(time.RFC3339), value, duration, err)
 						}
 					}
 

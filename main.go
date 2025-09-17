@@ -36,7 +36,7 @@ func main() {
 	result.InitializeLogger(10000)
 	result.StartFlusher()
 
-	sessions := client.ConnectToAll(cfg.Cassandra.Nodes, cfg.Cassandra.Keyspace)
+	sessions := client.ConnectToAll(cfg.Cassandra.Hosts, cfg.Cassandra.Keyspace)
 	defer func() {
 		for _, s := range sessions {
 			s.Close()

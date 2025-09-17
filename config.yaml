@@ -1,16 +1,64 @@
 cassandra:
-  nodes:
-    - "node_ips"
-    - "add node ips in list"
-  keyspace: "benchmark"
-  table: "employees"
+  hosts:
+  - 128.110.219.101
+  - 128.110.218.232
+  - 128.110.218.229
 
+  keyspace: benchmark
+  table: benchmark_table
+
+reads: 30000
+writes: 20000
+concurrency: 500
 benchmark:
-  duration_seconds: 300
+  duration_seconds: 25
+  # requests_per_second: Used only when rate_pattern.enabled is false
+  # When rate_pattern is enabled, this value is ignored and min_rate/max_rate are used instead
   requests_per_second : 10000
   warmup_seconds: 5
-  concurrency: 100
+  concurrency: 500
   read_ratio: 0.8
   write_ratio: 0.2
   mode: "open-loop" 
   log_file: "result.json"
+  rate_pattern:
+    enabled: true  # When true, uses min_rate/max_rate; when false, uses requests_per_second above
+    mode: "random"  # "cycles" for peak/valley pattern, "random" for random distribution
+    min_rate: 1000
+    max_rate: 15000
+    # For cycles mode:
+    peak_duration_seconds: 4
+    valley_duration_seconds: 2
+    # For random mode:
+    change_interval_seconds: 0.5 # How often to change the rate (in seconds)
+
+schema:
+  replication_strategy: "SimpleStrategy"  # or "NetworkTopologyStrategy"
+  replication_factor: 3
+  # network_topology:  # Only used when replication_strategy is NetworkTopologyStrategy
+  #   datacenter1: 3
+  #   datacenter2: 2
+  table_options:
+    bloom_filter_fp_chance: 0.01
+    caching:
+      keys: "ALL"
+      rows_per_partition: "NONE"
+    comment: "Employee benchmark data table"
+    compaction_strategy: "org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy"
+    compression_algorithm: "org.apache.cassandra.io.compress.LZ4Compressor"
+    gc_grace_seconds: 864000
+  indexes:
+    - name: "idx_category"
+      column: "category"
+    - name: "idx_timestamp"
+      column: "timestamp"
+    - name: "idx_value"
+      column: "value"
+
+monitoring:
+  enabled: true
+  interval_seconds: 5
+  enable_gpu: true
+  enable_docker: true
+  docker_container_id: "8bfcfb7878bb"  # Auto-detect if empty
+  output_file: "system_metrics.json"

@@ -2,7 +2,7 @@ package config
 
 type Config struct {
 	Cassandra struct {
-		Nodes    []string `yaml:"nodes"`
+		Hosts    []string `yaml:"hosts"`
 		Keyspace string   `yaml:"keyspace"`
 		Table    string   `yaml:"table"`
 	} `yaml:"cassandra"`
@@ -16,5 +16,14 @@ type Config struct {
 		Mode              string  `yaml:"mode"`
 		LogFile           string  `yaml:"log_file"`
 		RequestsPerSecond int     `yaml:"requests_per_second"`
+		RatePattern       struct {
+			Enabled         bool   `yaml:"enabled"`
+			Mode            string `yaml:"mode"`
+			MinRate         int    `yaml:"min_rate"`
+			MaxRate         int    `yaml:"max_rate"`
+			PeakDuration    int    `yaml:"peak_duration_seconds"`
+			ValleyDuration  int    `yaml:"valley_duration_seconds"`
+			ChangeInterval  float64 `yaml:"change_interval_seconds"`
+		} `yaml:"rate_pattern"`
 	} `yaml:"benchmark"`
 }
