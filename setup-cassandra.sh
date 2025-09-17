@@ -6,7 +6,6 @@
 set -e  # Exit on any error
 
 CONFIG_FILE="${1:-config.yaml}"
-SETUP_BINARY="./setup-schema"
 
 echo "🚀 Cassandra Benchmark Schema Setup"
 echo "=================================="
@@ -23,23 +22,27 @@ fi
 echo "📋 Using config file: $CONFIG_FILE"
 echo
 
-# Build the setup tool if it doesn't exist or is older than source
-if [ ! -f "$SETUP_BINARY" ] || [ cmd/setup-schema/main.go -nt "$SETUP_BINARY" ]; then
-    echo "🔨 Building schema setup tool..."
-    go build -o setup-schema cmd/setup-schema/main.go
-    echo "✅ Build completed"
-    echo
+# Check if Go module is available
+if [ ! -f "go.mod" ]; then
+    echo "❌ go.mod not found - not in a Go module directory"
+    exit 1
+fi
+
+# Check if setup-schema source exists
+if [ ! -d "cmd/setup-schema" ]; then
+    echo "❌ setup-schema source directory not found"
+    exit 1
 fi
 
 # Run the schema setup
 echo "🏗️ Running schema setup..."
 echo
-$SETUP_BINARY "$CONFIG_FILE"
+go run cmd/setup-schema/main.go "$CONFIG_FILE"
 
 echo
 echo "✨ Schema setup completed! Your Cassandra database is ready for benchmarking."
 echo
 echo "🎯 Next steps:"
-echo "   1. Run: go build -o benchmark-new cmd/benchmark/main.go"
-echo "   2. Run: ./benchmark-new"
+echo "   1. Run: go run cmd/benchmark/main.go"
+echo "   2. Or use: ./benchmark-monitoring.sh"
 echo "   3. View results in the Streamlit dashboard"

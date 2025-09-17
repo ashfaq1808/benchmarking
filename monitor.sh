@@ -5,7 +5,7 @@ FIRST=true
 
 while true; do
     TIMESTAMP=$(date +%s)
-    CPU_USAGE=$(top -l 1 -s 0 | grep "CPU usage" | awk '{print $3}' | sed 's/%//')
+    CPU_USAGE=$(top -l 1 | grep "CPU usage" | awk '{print $3}' | sed 's/%//')
     MEMORY_INFO=$(vm_stat | grep -E "Pages (free|active|inactive|speculative|throttled|wired|purgeable)" | awk '{print $3}' | sed 's/\.//')
 
     if [ "$FIRST" = false ]; then

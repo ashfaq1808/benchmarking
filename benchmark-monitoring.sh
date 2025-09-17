@@ -56,16 +56,10 @@ if ! command -v go &> /dev/null; then
     exit 1
 fi
 
-# Check if the benchmark binary exists, if not build it
-BENCHMARK_BINARY="./benchmark-monitoring"
-if [ ! -f "$BENCHMARK_BINARY" ] || [ ! -x "$BENCHMARK_BINARY" ]; then
-    print_info "Building benchmark binary..."
-    go build -o benchmark-monitoring ./cmd/benchmark/
-    if [ $? -ne 0 ]; then
-        print_error "Failed to build benchmark binary"
-        exit 1
-    fi
-    print_status "Benchmark binary built successfully"
+# Check if Go modules are available
+if [ ! -f "go.mod" ]; then
+    print_error "go.mod not found - not in a Go module directory"
+    exit 1
 fi
 
 # Start system monitoring in background
@@ -81,7 +75,7 @@ FIRST=true
 
 while true; do
     TIMESTAMP=$(date +%s)
-    CPU_USAGE=$(top -l 1 -s 0 | grep "CPU usage" | awk '{print $3}' | sed 's/%//')
+    CPU_USAGE=$(top -l 1 | grep "CPU usage" | awk '{print $3}' | sed 's/%//')
     MEMORY_INFO=$(vm_stat | grep -E "Pages (free|active|inactive|speculative|throttled|wired|purgeable)" | awk '{print $3}' | sed 's/\.//')
 
     if [ "$FIRST" = false ]; then
@@ -113,35 +107,21 @@ fi
 
 # Setup schema first
 print_info "Setting up Cassandra schema..."
-if [ -f "./setup-schema" ]; then
-    ./setup-schema
+if [ -d "./cmd/setup-schema" ]; then
+    go run ./cmd/setup-schema/
     if [ $? -eq 0 ]; then
         print_status "Schema setup completed"
     else
         print_warning "Schema setup had issues but continuing..."
     fi
 else
-    print_warning "setup-schema binary not found, skipping schema setup"
+    print_warning "setup-schema source not found, skipping schema setup"
 fi
 
 # Run the benchmark
 print_info "Starting benchmark execution..."
-
-# Try to run the native binary first
-if [ -f "$BENCHMARK_BINARY" ] && [ -x "$BENCHMARK_BINARY" ]; then
-    # Check the architecture
-    if file "$BENCHMARK_BINARY" | grep -q "$(uname -m)"; then
-        print_info "Running native benchmark binary..."
-        "$BENCHMARK_BINARY"
-    else
-        print_warning "Binary architecture mismatch, rebuilding..."
-        go build -o benchmark-monitoring ./cmd/benchmark/
-        "$BENCHMARK_BINARY"
-    fi
-else
-    print_info "Building and running benchmark from source..."
-    go run ./cmd/benchmark/
-fi
+print_info "Running benchmark from source..."
+go run ./cmd/benchmark/
 
 if [ $? -eq 0 ]; then
     print_status "Benchmarking completed successfully"
